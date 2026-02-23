@@ -16,5 +16,5 @@ export async function getUserRole(userId: string): Promise<string | null> {
 
 
 export async function createCreditPurchase(params: { user_id: string; credits: number; amount: number; gateway_charge_id?: string }) {
-  return supabase.from("credit_purchases").insert(params as any).select().single();
+  return supabase.from("credit_transactions" as any).insert(params as any).select().single();
 }
