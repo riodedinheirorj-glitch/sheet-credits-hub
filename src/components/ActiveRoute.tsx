@@ -22,7 +22,7 @@ const ActiveRoute = ({ onNavigate, importedData }: ActiveRouteProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const driverMarkerRef = useRef<mapboxgl.Marker | null>(null);
-  const destMarkerRef = useRef<mapboxgl.Marker | null>(null);
+  const stopMarkersRef = useRef<mapboxgl.Marker[]>([]);
   
   const [currentIndex, setCurrentIndex] = useState(0);
   const [driverCoords, setDriverCoords] = useState<[number, number] | null>(null);
@@ -83,32 +83,47 @@ const ActiveRoute = ({ onNavigate, importedData }: ActiveRouteProps) => {
       }
     }
 
-    // Marcador de Destino (gota pequena com número de sequência)
-    if (destLng && destLat) {
-      const seqNumber = currentIndex + 1;
-      const pinSvg = `<svg width="28" height="36" viewBox="0 0 28 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M14 35C14 35 27 21.5 27 13C27 5.82 21.18 1 14 1C6.82 1 1 5.82 1 13C1 21.5 14 35 14 35Z" fill="#7B61FF" stroke="#fff" stroke-width="1.5"/>
-        <text x="14" y="16" text-anchor="middle" fill="#fff" font-size="11" font-weight="bold" font-family="Arial, sans-serif">${seqNumber}</text>
-      </svg>`;
-      if (!destMarkerRef.current) {
-        const el = document.createElement("div");
-        el.innerHTML = pinSvg;
-        el.style.cursor = "pointer";
-        destMarkerRef.current = new mapboxgl.Marker({ element: el, anchor: "bottom" }).setLngLat([destLng, destLat]).addTo(map);
-      } else {
-        const el = destMarkerRef.current.getElement();
-        el.innerHTML = pinSvg;
-        destMarkerRef.current.setLngLat([destLng, destLat]);
-      }
+    // Remover marcadores antigos
+    stopMarkersRef.current.forEach(m => m.remove());
+    stopMarkersRef.current = [];
 
-      // Ajustar visão para mostrar motorista e destino
-      const bounds = new mapboxgl.LngLatBounds();
-      if (driverCoords) bounds.extend(driverCoords);
-      bounds.extend([destLng, destLat]);
-      
+    const bounds = new mapboxgl.LngLatBounds();
+    if (driverCoords) bounds.extend(driverCoords);
+
+    // Criar marcadores para todas as paradas
+    const rows = importedData?.rows || [];
+    rows.forEach((row, i) => {
+      const lat = parseFloat(String(row["Latitude"]).replace(',', '.'));
+      const lng = parseFloat(String(row["Longitude"]).replace(',', '.'));
+      if (isNaN(lat) || isNaN(lng)) return;
+
+      const isCurrent = i === currentIndex;
+      const isDone = i < currentIndex;
+      const seqNumber = i + 1;
+      const color = isDone ? "#9CA3AF" : isCurrent ? "#7B61FF" : "#3B82F6";
+      const size = isCurrent ? 32 : 24;
+      const h = isCurrent ? 42 : 31;
+      const fontSize = isCurrent ? 13 : 10;
+      const textY = isCurrent ? 18 : 13;
+      const halfW = size / 2;
+
+      const pinSvg = `<svg width="${size}" height="${h}" viewBox="0 0 ${size} ${h}" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M${halfW} ${h - 1}C${halfW} ${h - 1} ${size - 1} ${Math.round(h * 0.6)} ${size - 1} ${Math.round(size * 0.46)}C${size - 1} ${Math.round(size * 0.16)} ${Math.round(size * 0.77)} 1 ${halfW} 1C${Math.round(size * 0.23)} 1 1 ${Math.round(size * 0.16)} 1 ${Math.round(size * 0.46)}C1 ${Math.round(h * 0.6)} ${halfW} ${h - 1} ${halfW} ${h - 1}Z" fill="${color}" stroke="#fff" stroke-width="1.5" ${isDone ? 'opacity="0.6"' : ""}/>
+        <text x="${halfW}" y="${textY}" text-anchor="middle" fill="#fff" font-size="${fontSize}" font-weight="bold" font-family="Arial, sans-serif">${seqNumber}</text>
+      </svg>`;
+
+      const el = document.createElement("div");
+      el.innerHTML = pinSvg;
+      el.style.cursor = "pointer";
+      const marker = new mapboxgl.Marker({ element: el, anchor: "bottom" }).setLngLat([lng, lat]).addTo(map);
+      stopMarkersRef.current.push(marker);
+      bounds.extend([lng, lat]);
+    });
+
+    if (!bounds.isEmpty()) {
       map.fitBounds(bounds, { padding: 60, duration: 1000 });
     }
-  }, [driverCoords, destLat, destLng]);
+  }, [driverCoords, currentIndex, importedData]);
 
   const handleNext = () => {
     if (currentIndex < total - 1) {
