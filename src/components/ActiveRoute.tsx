@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ChevronLeft, Package, Phone, CheckCircle, XCircle, Loader2, Lock } from "lucide-react";
+import { ChevronLeft, Package, Navigation, CheckCircle, XCircle, Loader2, Lock } from "lucide-react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { ImportedData } from "@/pages/Index";
@@ -219,9 +219,9 @@ const ActiveRoute = ({ onNavigate, importedData }: ActiveRouteProps) => {
             )}
 
             <div className="grid grid-cols-3 gap-3">
-              <button className="bg-card rounded-[16px] shadow-card py-4 flex flex-col items-center justify-center gap-1.5">
-                <Phone size={18} className="text-muted-foreground" />
-                <span className="text-xs font-semibold text-muted-foreground">Ligar</span>
+              <button onClick={handleOpenNav} className="bg-card rounded-[16px] shadow-card py-4 flex flex-col items-center justify-center gap-1.5">
+                <Navigation size={18} className="text-muted-foreground" />
+                <span className="text-xs font-semibold text-muted-foreground">Navegar</span>
               </button>
               <button onClick={handleNext} className="gradient-primary rounded-[16px] shadow-button py-4 flex flex-col items-center justify-center gap-1.5">
                 <CheckCircle size={18} className="text-white" />
