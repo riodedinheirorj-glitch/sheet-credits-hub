@@ -58,8 +58,8 @@ const HudLoginScreen = ({ onSuccess }: Props) => {
       await supabase.from("profiles").upsert({
         id: data.user.id,
         email,
-        full_name: name,
-      });
+        name: name,
+      } as any);
     }
     setLoading(false);
     toast.success("Verifique seu email para confirmar o cadastro!");

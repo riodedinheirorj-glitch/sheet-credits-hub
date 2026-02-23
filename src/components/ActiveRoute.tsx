@@ -72,24 +72,40 @@ const ActiveRoute = ({ onNavigate, importedData }: ActiveRouteProps) => {
 
     const map = mapRef.current;
 
-    // Marcador do Motorista (Verde)
+    // Marcador do Motorista (Verde - gota)
     if (driverCoords) {
       if (!driverMarkerRef.current) {
         const el = document.createElement("div");
-        el.innerHTML = `<div style="width:32px;height:32px;background:#27AE60;border-radius:50%;display:flex;align-items:center;justify-content:center;border:3px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,0.2);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg></div>`;
-        driverMarkerRef.current = new mapboxgl.Marker({ element: el }).setLngLat(driverCoords).addTo(map);
+        el.innerHTML = `<svg width="40" height="52" viewBox="0 0 40 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 51C20 51 38 30.5 38 19C38 8.50659 29.9411 2 20 2C10.0589 2 2 8.50659 2 19C2 30.5 20 51 20 51Z" fill="#27AE60" stroke="#fff" stroke-width="2.5"/>
+          <circle cx="20" cy="19" r="10" fill="#fff"/>
+          <polygon points="16,15 16,23 24,19" fill="#27AE60"/>
+        </svg>`;
+        el.style.cursor = "pointer";
+        driverMarkerRef.current = new mapboxgl.Marker({ element: el, anchor: "bottom" }).setLngLat(driverCoords).addTo(map);
       } else {
         driverMarkerRef.current.setLngLat(driverCoords);
       }
     }
 
-    // Marcador de Destino (Roxo/Azul) usando Latitude/Longitude da planilha
+    // Marcador de Destino (gota com número de sequência)
     if (destLng && destLat) {
+      const seqNumber = currentIndex + 1;
       if (!destMarkerRef.current) {
         const el = document.createElement("div");
-        el.innerHTML = `<div style="width:36px;height:36px;background:linear-gradient(135deg,#2F80ED,#7B61FF);border-radius:50%;display:flex;align-items:center;justify-content:center;border:3px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,0.2);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><path d="M20 10c0 6-8 13-8 13s-8-7-8-13a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></div>`;
-        destMarkerRef.current = new mapboxgl.Marker({ element: el }).setLngLat([destLng, destLat]).addTo(map);
+        el.innerHTML = `<svg width="40" height="52" viewBox="0 0 40 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 51C20 51 38 30.5 38 19C38 8.50659 29.9411 2 20 2C10.0589 2 2 8.50659 2 19C2 30.5 20 51 20 51Z" fill="#7B61FF" stroke="#fff" stroke-width="2.5"/>
+          <text x="20" y="23" text-anchor="middle" fill="#fff" font-size="16" font-weight="bold" font-family="Arial, sans-serif">${seqNumber}</text>
+        </svg>`;
+        el.style.cursor = "pointer";
+        destMarkerRef.current = new mapboxgl.Marker({ element: el, anchor: "bottom" }).setLngLat([destLng, destLat]).addTo(map);
       } else {
+        // Update number and position
+        const el = destMarkerRef.current.getElement();
+        el.innerHTML = `<svg width="40" height="52" viewBox="0 0 40 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 51C20 51 38 30.5 38 19C38 8.50659 29.9411 2 20 2C10.0589 2 2 8.50659 2 19C2 30.5 20 51 20 51Z" fill="#7B61FF" stroke="#fff" stroke-width="2.5"/>
+          <text x="20" y="23" text-anchor="middle" fill="#fff" font-size="16" font-weight="bold" font-family="Arial, sans-serif">${seqNumber}</text>
+        </svg>`;
         destMarkerRef.current.setLngLat([destLng, destLat]);
       }
 
